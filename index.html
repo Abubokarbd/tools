@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> Widget সংগ্রহ</title>
+  <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'SolaimanLipi', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #222;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.8em;
+    }
+
+    .widget-list {
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .widget-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: box-shadow 0.3s;
+    }
+
+    .widget-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .widget-title {
+      font-size: 1.2em;
+      margin: 0 0 6px;
+    }
+
+    .widget-desc {
+      font-size: 0.95em;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    .widget-links a {
+      text-decoration: none;
+      color: #0077cc;
+      margin-right: 15px;
+      font-size: 0.9em;
+    }
+
+    .widget-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hm-এর Widget সংগ্রহ</h1>
+  <div class="widget-list" id="widgetList"></div>
+
+  <script>
+    const widgets = [
+      {
+        title: "বাংলা-হিজরি-ইংরেজি তারিখ উইজেট",
+        desc: "এক লাইনে তিনটি তারিখ দেখায়, responsive ও transparent ডিজাইন সহ।",
+        preview: "https://yourusername.github.io/ara-ban-eng-date-widget.html",
+        install: "https://github.com/yourusername/ara-ban-eng-date-widget"
+      },
+      {
+        title: "বাংলা ক্যালেন্ডার উইজেট",
+        desc: "বঙ্গাব্দ মাস ও দিন দেখায়, auto-update সহ।",
+        preview: "#",
+        install: "#"
+      },
+      {
+        title: "ইসলামিক নামাজ সময়সূচি উইজেট",
+        desc: "নামাজের সময়, সূর্যোদয়, ইফতার ইত্যাদি দেখায়।",
+        preview: "#",
+        install: "#"
+      }
+    ];
+
+    const container = document.getElementById("widgetList");
+
+    widgets.forEach((widget, index) => {
+      const item = document.createElement("div");
+      item.className = "widget-item";
+
+      item.innerHTML = `
+        <div class="widget-title">${index + 1}. ${widget.title}</div>
+        <div class="widget-desc">${widget.desc}</div>
+        <div class="widget-links">
+          <a href="${widget.preview}" target="_blank">Live Preview</a>
+          <a href="${widget.install}" target="_blank">Install / GitHub</a>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  </script>
+</body>
+</html>
