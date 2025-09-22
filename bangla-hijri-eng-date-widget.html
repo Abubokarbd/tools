@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>বাংলা তারিখ উইজেট</title>
+  <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'SolaimanLipi', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: transparent;
+      text-align: center;
+    }
+
+    #fullDate {
+      font-size: 1em;
+      font-weight: bold;
+      padding: 6px 10px;
+      border-radius: 10px;
+      display: inline-block;
+      margin: 5px;
+      background-color: transparent;
+      line-height: 1.4em;
+      white-space: pre-line;
+    }
+
+    @media (min-width: 400px) {
+      #fullDate {
+        white-space: nowrap;
+      }
+    }
+
+    #linkIcon {
+      font-size: 0.9em;
+      margin-left: 6px;
+      opacity: 0.5;
+      cursor: pointer;
+    }
+
+    #linkIcon:hover {
+      opacity: 0.9;
+    }
+
+    #linkIcon a {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
+</head>
+<body>
+  <p id="fullDate">তারিখ লোড হচ্ছে...</p>
+
+  <script>
+    const bnDigits = d => d.toString().replace(/\d/g, n => '০১২৩৪৫৬৭৮৯'[n]);
+    const bnMonths = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+    const bnDays = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+
+    function getEnglishDate(date) {
+      const day = bnDays[date.getDay()];
+      const d = bnDigits(date.getDate());
+      const m = bnMonths[date.getMonth()];
+      const y = bnDigits(date.getFullYear());
+      return `${day}, ${d} ${m} ${y} খ্রিস্টাব্দ`;
+    }
+
+    async function getHijriBD(date) {
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      const apiURL = `https://bd-hijri-dates.qomarhsn.com/?date=${dd}-${mm}-${yyyy}`;
+
+      try {
+        const res = await fetch(apiURL);
+        const data = await res.json();
+        const hijriRaw = data.hijriDate;
+        const parts = hijriRaw.split("-");
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2];
+
+        const hijriMonthNames = {
+          "01": "মুহাররম", "02": "সফর", "03": "রবিউল আউয়াল", "04": "রবিউস সানি",
+          "05": "জমাদিউল আউয়াল", "06": "জমাদিউস সানি", "07": "রজব", "08": "শাবান",
+          "09": "রমজান", "10": "শাওয়াল", "11": "জিলক্বদ", "12": "জিলহজ্জ"
+        };
+
+        return `${bnDigits(day)} ${hijriMonthNames[month]} ${bnDigits(year)} হিজরি`;
+      } catch (err) {
+        return "হিজরি তারিখ পাওয়া যায়নি";
+      }
+    }
+
+    function getBongabdoFixed(date) {
+      const engDate = date.getDate();
+      const engMonth = date.getMonth() + 1;
+      const engYear = date.getFullYear();
+
+      const banglaMonths = [
+        { name: 'বৈশাখ', start: { month: 4, day: 14 } },
+        { name: 'জ্যৈষ্ঠ', start: { month: 5, day: 15 } },
+        { name: 'আষাঢ়', start: { month: 6, day: 15 } },
+        { name: 'শ্রাবণ', start: { month: 7, day: 16 } },
+        { name: 'ভাদ্র', start: { month: 8, day: 16 } },
+        { name: 'আশ্বিন', start: { month: 9, day: 16 } },
+        { name: 'কার্তিক', start: { month: 10, day: 16 } },
+        { name: 'অগ্রহায়ণ', start: { month: 11, day: 16 } },
+        { name: 'পৌষ', start: { month: 12, day: 16 } },
+        { name: 'মাঘ', start: { month: 1, day: 15 } },
+        { name: 'ফাল্গুন', start: { month: 2, day: 13 } },
+        { name: 'চৈত্র', start: { month: 3, day: 15 } }
+      ];
+
+      let banglaMonth = '';
+      let banglaDay = 0;
+      let banglaYear = engYear - 593;
+
+      for (let i = 0; i < banglaMonths.length; i++) {
+        const current = banglaMonths[i];
+        const next = banglaMonths[(i + 1) % 12];
+
+        const startDate = new Date(engYear, current.start.month - 1, current.start.day);
+        const nextStartDate = new Date(engYear, next.start.month - 1, next.start.day);
+
+        if (date >= startDate && date < nextStartDate) {
+          banglaMonth = current.name;
+          banglaDay = Math.floor((date - startDate) / (1000 * 60 * 60 * 24)) + 1;
+          break;
+        }
+      }
+
+      if (engMonth < 4 || (engMonth === 4 && engDate < 14)) {
+        banglaYear -= 1;
+      }
+
+      return `${bnDigits(banglaDay)} ${banglaMonth} ${bnDigits(banglaYear)} বঙ্গাব্দ`;
+    }
+
+    async function showFullDate() {
+      const today = new Date();
+      const hijri = await getHijriBD(today);
+      const bangla = getBongabdoFixed(today);
+      const english = getEnglishDate(today);
+      const icon = `<span id="linkIcon"><a href="https://abubokar.blogspot.com/search?q=blogspot/" target="_blank" title="বিস্তারিত জানতে ক্লিক করুন">🌐</a></span>`;
+      document.getElementById("fullDate").innerHTML = `${hijri} | ${bangla} | ${english} ${icon}`;
+    }
+
+    showFullDate();
+  </script>
+</body>
+</html>
