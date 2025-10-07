@@ -1,0 +1,213 @@
+
+<html lang="bn">
+<head>
+  <meta charset="UTF-8"></meta>
+  <title>খুতবা তালিকা</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"></meta>
+  <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet"></link>
+  <style>
+    body {
+      font-family: 'SolaimanLipi', Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    #toggle-buttons {
+      margin-bottom: 20px;
+    }
+    #toggle-buttons button {
+      font-size: 18px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #btn-dynamic {
+      font-family: 'SolaimanLipi', Arial, sans-serif;
+      background-color: #1a73e8;
+      color: white;
+    }
+    #btn-static {
+      font-family: 'SolaimanLipi', Arial, sans-serif;
+      background-color: #e0e0e0;
+      color: black;
+      margin-left: 10px;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    li a {
+      text-decoration: none;
+      color: #000;
+    }
+    li a:hover {
+      text-decoration: underline;
+      color: #1a73e8;
+    }
+    .click-count {
+      color: gray;
+      font-size: 16px;
+      margin-left: 6px;
+    }
+    
+    ul, li {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+li::marker {
+  display: none;
+}
+
+    
+    @media screen and (max-width: 768px) {
+      li {
+        font-size: 18px;
+      }
+      .click-count {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📚 খুতবা তালিকা</h2>
+
+  <div id="toggle-buttons">
+    <button id="btn-dynamic">ডায়নামিক</button>
+    <button id="btn-static">স্ট্যাটিক</button>
+  </div>
+  <div id="note" style="background: #f1f1f1; border-left: 4px solid #1a73e8; border-radius: 4px; color: #444444; font-size: 16px; margin-top: 15px; padding: 10px;">
+    
+    <b>ডায়নামিক তালিকা</b> ভিজিটরদের ভিজিট ও ক্লিকের সংখ্যা অনুযায়ী উপরে-নিচে পরিবর্তিত হবে।  
+    আর <b>স্ট্যাটিক তালিকা</b> সবসময় একই অবস্থায় থাকবে, শুধুমাত্র শিরোনামের পাশে ভিজিটর সংখ্যা আপডেট হবে।
+  </div>
+
+  <div id="list-container"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+    import { getFirestore, collection, doc, getDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-gblP8aKiU2ILV5-M5h5DhNwlykjtVCI",
+      authDomain: "abubokarblogclicktracker.firebaseapp.com",
+      projectId: "abubokarblogclicktracker",
+      storageBucket: "abubokarblogclicktracker.appspot.com",
+      messagingSenderId: "1013335090866",
+      appId: "1:1013335090866:web:7113afee57480ef4824bab",
+      measurementId: "G-JZZRBMLEVY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function toBengaliNumber(num) {
+      const digits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+      return num.toString().split('').map(d => digits[d] || d).join('');
+    }
+
+    async function loadDynamicList() {
+      const container = document.getElementById("list-container");
+      container.innerHTML = "<ul>";
+
+      const colRef = collection(db, "links");
+      const querySnapshot = await getDocs(colRef);
+
+      let allLinks = [];
+      querySnapshot.forEach(docSnap => {
+        let data = docSnap.data();
+        allLinks.push({
+          id: docSnap.id,
+          title: data.title,
+          url: data.url,
+          countView: data.countView || 0,
+          countClick: data.countClick || 0
+        });
+      });
+
+      allLinks.sort((a, b) => (b.countView + b.countClick) - (a.countView + a.countClick));
+
+      allLinks.forEach((link, index) => {
+        container.innerHTML += `<li>
+          <span style="font-weight:bold;">${toBengaliNumber(index + 1)}.</span>
+          <a href="${link.url}" data-id="${link.id}">${link.title}</a>
+          <span class="click-count">${toBengaliNumber(link.countView)} বার পড়া · ${toBengaliNumber(link.countClick)} বার ক্লিক</span>
+        </li>`;
+      });
+
+      container.innerHTML += "</ul>";
+
+      document.querySelectorAll("#list-container a").forEach(linkEl => {
+        const linkId = linkEl.dataset.id;
+        updateViewCount(linkId);
+        linkEl.addEventListener("click", () => {
+          updateClickCount(linkId).then(loadDynamicList);
+        });
+      });
+    }
+
+    async function loadStaticList() {
+      const container = document.getElementById("list-container");
+      container.innerHTML = "<ul>";
+
+      const colRef = collection(db, "links");
+      const querySnapshot = await getDocs(colRef);
+
+      let index = 1;
+      querySnapshot.forEach(docSnap => {
+        let data = docSnap.data();
+        container.innerHTML += `<li>
+          <span style="font-weight:bold;">${toBengaliNumber(index)}.</span>
+          <a href="${data.url}">${data.title}</a>
+          <span class="click-count">${toBengaliNumber(data.countView || 0)} বার পড়া · ${toBengaliNumber(data.countClick || 0)} বার ক্লিক</span>
+        </li>`;
+        index++;
+      });
+
+      container.innerHTML += "</ul>";
+    }
+
+    async function updateViewCount(linkId) {
+      const ref = doc(db, "links", linkId);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        await updateDoc(ref, { countView: increment(1) });
+      }
+    }
+
+    async function updateClickCount(linkId) {
+      const ref = doc(db, "links", linkId);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        await updateDoc(ref, { countClick: increment(1) });
+      }
+    }
+
+    document.getElementById("btn-dynamic").addEventListener("click", () => {
+      loadDynamicList();
+      document.getElementById("btn-dynamic").style.backgroundColor = "#1a73e8";
+      document.getElementById("btn-dynamic").style.color = "white";
+      document.getElementById("btn-static").style.backgroundColor = "#e0e0e0";
+      document.getElementById("btn-static").style.color = "black";
+    });
+
+    document.getElementById("btn-static").addEventListener("click", () => {
+      loadStaticList();
+      document.getElementById("btn-static").style.backgroundColor = "#1a73e8";
+      document.getElementById("btn-static").style.color = "white";
+      document.getElementById("btn-dynamic").style.backgroundColor = "#e0e0e0";
+      document.getElementById("btn-dynamic").style.color = "black";
+    });
+
+    loadDynamicList();
+  </script>
+
+</body>
+</html>
