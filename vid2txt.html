@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube to Text</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f7fa; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    input, button { padding: 12px; margin: 10px 0; width: 100%; border-radius: 8px; font-size: 16px; }
+    input { border: 1px solid #ccc; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+    .loader { display: none; text-align: center; margin: 20px; }
+    .download { margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align:center;">YouTube to Text Converter</h1>
+    <p style="text-align:center;">ইউটিউব লিঙ্ক দিন → টেক্সট পান</p>
+
+    <input type="text" id="urlInput" placeholder="এখানে YouTube লিঙ্ক পেস্ট করুন..." value="https://www.youtube.com/watch?v=czw_7BTa9bo" />
+    <button onclick="convertVideo()">Convert to Text</button>
+
+    <div class="loader" id="loader">
+      <p>অপেক্ষা করুন... ট্রান্সক্রাইব হচ্ছে...</p>
+    </div>
+
+    <jų id="result"></div>
+    <button class="download" id="downloadBtn" onclick="downloadText()">TXT ডাউনলোড করুন</button>
+  </div>
+
+  <script>
+    async function convertVideo() {
+      const url = document.getElementById("urlInput").value.trim();
+      if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+        alert("সঠিক YouTube লিঙ্ক দিন!");
+        return;
+      }
+
+      const resultDiv = document.getElementById("result");
+      const loader = document.getElementById("loader");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      resultDiv.innerHTML = "";
+      downloadBtn.style.display = "none";
+      loader.style.display = "block";
+
+      try {
+       
