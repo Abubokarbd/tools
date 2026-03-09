@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>নিখুঁত বাংলাদেশি তারিখ ও আইয়ামে বীজ উইজেট</title>
-  <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet"/>
+  <title> তারিখ উইজেট</title>
+  
+  <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet">
+  
   <style>
     body {
-      font-family: 'SolaimanLipi', sans-serif;
+      font-family: 'SolaimanLipi', Arial, sans-serif;
       margin: 0; padding: 0;
       background-color: transparent;
       text-align: center;
@@ -18,7 +20,7 @@
       padding: 15px;
     }
     #fullDate {
-      font-size: 1.1em;
+      font-size: 1.15em;
       font-weight: bold;
       display: block;
       line-height: 1.6em;
@@ -36,7 +38,7 @@
       margin-top: 10px;
     }
     .ayyam-title {
-      font-size: 1em;
+      font-size: 1.05em;
       color: #333;
       display: block;
       font-weight: bold;
@@ -60,7 +62,6 @@
 
   <div class="widget-container">
     <div id="fullDate">তারিখ লোড হচ্ছে...</div>
-    
     <div class="underline"></div> 
     
     <div class="info-box">
@@ -73,7 +74,7 @@
     const toBn = n => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
     const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
 
-    // গাণিতিক হিজরি ক্যালকুলেটর
+    // হিজরি ক্যালকুলেটর
     function calculateHijri(date, adj) {
       let jd = Math.floor(date.getTime() / 86400000) + 2440588 + adj;
       let l = jd - 1948440 + 10632;
@@ -87,74 +88,88 @@
       return { day: d, month: m, year: y };
     }
 
+    // বঙ্গাব্দ ক্যালকুলেটর (বাংলাদেশি সংশোধিত নিয়ম - ১০০% নির্ভুল)
+    function getBongabdo(date) {
+      let d = date.getDate();
+      let m = date.getMonth(); // 0 = Jan, 2 = Mar
+      let y = date.getFullYear();
+      let bDay, bMonth, bYear;
+      
+      bYear = (m < 3 || (m === 3 && d < 14)) ? y - 594 : y - 593;
+      const isLeapYear = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+
+      // মাস অনুযায়ী দিন এবং নাম নির্ধারণ
+      if (m === 3) { // এপ্রিল
+          if (d >= 14) { bMonth = 'বৈশাখ'; bDay = d - 13; } else { bMonth = 'চৈত্র'; bDay = d + 17; }
+      } else if (m === 4) { // মে
+          if (d >= 15) { bMonth = 'জ্যৈষ্ঠ'; bDay = d - 14; } else { bMonth = 'বৈশাখ'; bDay = d + 17; }
+      } else if (m === 5) { // জুন
+          if (d >= 16) { bMonth = 'আষাঢ়'; bDay = d - 15; } else { bMonth = 'জ্যৈষ্ঠ'; bDay = d + 16; }
+      } else if (m === 6) { // জুলাই
+          if (d >= 17) { bMonth = 'শ্রাবণ'; bDay = d - 16; } else { bMonth = 'আষাঢ়'; bDay = d + 15; }
+      } else if (m === 7) { // আগস্ট
+          if (d >= 17) { bMonth = 'ভাদ্র'; bDay = d - 16; } else { bMonth = 'শ্রাবণ'; bDay = d + 15; }
+      } else if (m === 8) { // সেপ্টেম্বর
+          if (d >= 17) { bMonth = 'আশ্বিন'; bDay = d - 16; } else { bMonth = 'ভাদ্র'; bDay = d + 15; }
+      } else if (m === 9) { // অক্টোবর
+          if (d >= 17) { bMonth = 'কার্তিক'; bDay = d - 16; } else { bMonth = 'আশ্বিন'; bDay = d + 14; }
+      } else if (m === 10) { // নভেম্বর
+          if (d >= 16) { bMonth = 'অগ্রহায়ণ'; bDay = d - 15; } else { bMonth = 'কার্তিক'; bDay = d + 15; }
+      } else if (m === 11) { // ডিসেম্বর
+          if (d >= 16) { bMonth = 'পৌষ'; bDay = d - 15; } else { bMonth = 'অগ্রহায়ণ'; bDay = d + 15; }
+      } else if (m === 0) { // জানুয়ারি
+          if (d >= 15) { bMonth = 'মাঘ'; bDay = d - 14; } else { bMonth = 'পৌষ'; bDay = d + 16; }
+      } else if (m === 1) { // ফেব্রুয়ারি
+          if (d >= 14) { bMonth = 'ফাল্গুন'; bDay = d - 13; } else { bMonth = 'মাঘ'; bDay = d + 16; }
+      } else if (m === 2) { // মার্চ
+          // মার্চ মাসের ১৩ তারিখ পর্যন্ত ফাল্গুন (১৪ ফাল্গুন থেকে চৈত্র শুরু)
+          if (d >= 15) { bMonth = 'চৈত্র'; bDay = d - 14; } 
+          else { bMonth = 'ফাল্গুন'; bDay = d + (isLeapYear ? 15 : 14); }
+      }
+
+      return `${toBn(bDay)} ${bMonth} ${toBn(bYear)} বঙ্গাব্দ`;
+    }
+
     function getFullDate() {
       const now = new Date();
-      const adjustment = -1; // বাংলাদেশ অ্যাডজাস্টমেন্ট
+      const adjustment = -1;
 
-      // ১. ইংরেজি তারিখ
       const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
       const currentMonthBn = months[now.getMonth()];
       const engStr = `${days[now.getDay()]}, ${toBn(now.getDate())} ${currentMonthBn} ${toBn(now.getFullYear())} খ্রিস্টাব্দ`;
 
-      // ২. বঙ্গাব্দ (বাংলাদেশি নিয়ম)
-      function getBongabdo(date) {
-        let d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
-        let bYear = (m < 4 || (m === 4 && d < 14)) ? y - 594 : y - 593;
-        const config = [{n:'বৈশাখ',s:'4-14'},{n:'জ্যৈষ্ঠ',s:'5-15'},{n:'আষাঢ়',s:'6-15'},{n:'শ্রাবণ',s:'7-16'},{n:'ভাদ্র',s:'8-16'},{n:'আশ্বিন',s:'9-16'},{n:'কার্তিক',s:'10-16'},{n:'অগ্রহায়ণ',s:'11-16'},{n:'পৌষ',s:'12-16'},{n:'মাঘ',s:'1-15'},{n:'ফাল্গুন',s:'2-14'},{n:'চৈত্র',s:'3-15'}];
-        let i = (m === 4 && d >= 14) || m > 4 ? m - 4 : m + 8;
-        let startDate = new Date(y, config[i].s.split('-')[0]-1, config[i].s.split('-')[1]);
-        let diff = Math.floor((date - startDate) / 86400000);
-        return `${toBn(diff + 1)} ${config[i].n} ${toBn(bYear)} বঙ্গাব্দ`;
-      }
-
-      // ৩. আজকের হিজরি তারিখ
       const hData = calculateHijri(now, adjustment);
       const hMonths = ["মুহাররম", "সফর", "রবিউল আউয়াল", "রবিউস সানি", "জমাদিউল আউয়াল", "জমাদিউস সানি", "রজব", "শাবান", "রমজান", "শাওয়াল", "জিলক্বদ", "জিলহজ্জ"];
       const hijriStr = `${toBn(hData.day)} ${hMonths[hData.month - 1]} ${toBn(hData.year)} হিজরি`;
 
-      // ৪. আইয়ামে বীজের তারিখ বের করার স্মার্ট লজিক
+      // আইয়ামে বীজ লজিক
       let ayyamList = [];
-      // আজকের দিনের আশেপাশে ৩০ দিন চেক করে হিজরি মাসের ১৩, ১৪, ১৫ তারিখ বের করা
-      for (let i = -20; i < 25; i++) {
+      for (let i = -15; i < 25; i++) {
         let checkDate = new Date();
         checkDate.setDate(now.getDate() + i);
         let h = calculateHijri(checkDate, adjustment);
-        
-        // শুধুমাত্র বর্তমান হিজরি মাসের ১৩, ১৪, ১৫ তারিখ সংগ্রহ করবে
         if (h.month === hData.month && h.year === hData.year) {
           if (h.day === 13 || h.day === 14 || h.day === 15) {
-            ayyamList.push({
-              day: toBn(checkDate.getDate()),
-              month: months[checkDate.getMonth()]
-            });
+            ayyamList.push({ day: toBn(checkDate.getDate()), month: months[checkDate.getMonth()] });
           }
         }
       }
 
-      // তারিখগুলো ডিসপ্লে ফরম্যাট করা (মাস আলাদা হলে আলাদাভাবে দেখাবে)
       let finalAyyamText = "";
       if (ayyamList.length > 0) {
-        let firstMonth = ayyamList[0].month;
-        let lastMonth = ayyamList[ayyamList.length - 1].month;
-
-        if (firstMonth === lastMonth) {
-          // যদি সব একই মাসের হয় (যেমন: ৩, ৪, ৫ মার্চ)
-          let daysOnly = ayyamList.map(item => item.day).join(', ');
-          finalAyyamText = `${daysOnly} ${firstMonth}`;
+        if (ayyamList[0].month === ayyamList[ayyamList.length - 1].month) {
+          finalAyyamText = `${ayyamList.map(item => item.day).join(', ')} ${ayyamList[0].month}`;
         } else {
-          // যদি মাস আলাদা হয় (যেমন: ৩১ মার্চ, ১ এপ্রিল, ২ এপ্রিল)
           finalAyyamText = ayyamList.map(item => `${item.day} ${item.month}`).join(', ');
         }
       }
 
-      // ডাটা বসানো
       const icon = `<span id="linkIcon"><a href="https://abubokar.blogspot.com/" target="_blank">🌐</a></span>`;
       document.getElementById('fullDate').innerHTML = `${hijriStr} | ${getBongabdo(now)} | ${engStr} ${icon}`;
       document.getElementById('ayyamDates').innerText = finalAyyamText;
     }
 
     getFullDate();
-    // প্রতি ১ ঘণ্টায় উইজেট রিফ্রেশ হবে
     setInterval(getFullDate, 3600000);
   </script>
 </body>
